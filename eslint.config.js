@@ -23,7 +23,13 @@ export default typescriptEslint.config(
 
 	// Ignored files
 	{
-		ignores: ['**/dist/', 'packages/extensions-sdk/templates/', 'api/extensions/'],
+		ignores: [
+			'**/dist/',
+			'packages/extensions-sdk/templates/',
+			'api/extensions/',
+			'packages/visual-editing/test-website/**',
+			'docker-entrypoint.cjs',
+		],
 	},
 
 	// Enable recommended rules for JS files
@@ -156,8 +162,8 @@ export default typescriptEslint.config(
 			'vue/no-undef-components': [
 				'error',
 				{
-					// Histoire components in *.story.vue files
-					ignorePatterns: ['Story', 'Variant', 'Hst*'],
+					// TresJS custom-renderer elements
+					ignorePatterns: ['Tres*'],
 				},
 			],
 			// Require <PascalCase /> components in templates

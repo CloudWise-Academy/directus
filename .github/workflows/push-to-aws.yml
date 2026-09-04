@@ -1,0 +1,40 @@
+name: Build and push Directus image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-2
+  ECR_REPOSITORY: c4k-directus
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::051986612304:role/c4k-ecr-push-c4k-directus
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: aws-actions/amazon-ecr-login@v2
+        id: ecr-login
+
+      - name: Build and push image
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::12}
+          IMAGE_URI=${{ steps.ecr-login.outputs.registry }}/${ECR_REPOSITORY}:${IMAGE_TAG}
+
+          docker build -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+
+          echo "Pushed $IMAGE_URI"

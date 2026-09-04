@@ -21,6 +21,22 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Print OIDC claims
+        run: |
+          TOKEN="$(curl -sS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+
+          TOKEN="$TOKEN" python3 - <<'PY'
+          import base64, json, os
+          token = os.environ["TOKEN"]
+          payload = token.split(".")[1]
+          payload += "=" * (-len(payload) % 4)
+          claims = json.loads(base64.urlsafe_b64decode(payload))
+          for key in ["iss", "aud", "sub", "repository", "repository_id", "repository_owner", "repository_owner_id", "ref", "workflow_ref"]:
+              print(f"{key}: {claims.get(key)}")
+          PY
+
       - uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::051986612304:role/c4k-ecr-push-c4k-directus
